@@ -1685,31 +1685,64 @@ const App: React.FC = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const templateData = [
-      ["NISN", "Nama", "Kelas"], // Header tetap sama
-    ];
+    try {
+      const headers = ["NISN", "Nama", "Kelas"]; // Header template sederhana
+      const data = [headers]; // Hanya header, tanpa data tambahan (kosong)
 
-    const ws = XLSX.utils.aoa_to_sheet(templateData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template Siswa");
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 10 }]; // Lebar kolom opsional untuk tampilan bagus
 
-    // Generate buffer XLSX
-    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template Siswa");
 
-    // Buat Blob dengan MIME type resmi untuk .xlsx
-    const blob = new Blob([wbout], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+      // Buat blob dari workbook (sama seperti kode-mu)
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
 
-    // Trigger download manual (lebih andal di HP)
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "template_siswa.xlsx"; // Pastikan ekstensi .xlsx
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // Nama file dinamis (opsional, seperti kode-mu)
+      const date = new Date()
+        .toLocaleString("id-ID", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(/ /g, "_")
+        .replace(/:/g, "-");
+      const fileName = `Template_Siswa_${date}.xlsx`;
+
+      // Cek apakah browser mendukung download langsung (handling IE/Edge & Mobile, seperti kode-mu)
+      if (window.navigator && (window.navigator as any).msSaveOrOpenBlob) {
+        // IE & Edge
+        (window.navigator as any).msSaveOrOpenBlob(blob, fileName);
+      } else {
+        // Browser modern & Mobile
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.style.display = "none";
+
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup dengan timeout (seperti kode-mu, lebih aman di HP)
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+
+      // Tampilkan notifikasi sukses (seperti kode-mu)
+      alert("✅ Template Excel berhasil diunduh!");
+    } catch (error) {
+      console.error("Error saat download Template Excel:", error);
+      alert("❌ Gagal mengunduh template Excel. Silakan coba lagi.");
+    }
   };
 
   const handleAddTeacher = async () => {
