@@ -1685,18 +1685,31 @@ const App: React.FC = () => {
   };
 
   const handleDownloadTemplate = () => {
-    // Data header untuk template
     const templateData = [
-      ["NISN", "Nama", "Kelas"], // Baris header saja
+      ["NISN", "Nama", "Kelas"], // Header tetap sama
     ];
 
-    // Buat worksheet dan workbook
     const ws = XLSX.utils.aoa_to_sheet(templateData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template Siswa");
 
-    // Generate dan download file
-    XLSX.writeFile(wb, "template_siswa.xlsx");
+    // Generate buffer XLSX
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    // Buat Blob dengan MIME type resmi untuk .xlsx
+    const blob = new Blob([wbout], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // Trigger download manual (lebih andal di HP)
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "template_siswa.xlsx"; // Pastikan ekstensi .xlsx
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleAddTeacher = async () => {
