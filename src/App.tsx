@@ -269,13 +269,22 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const now = new Date();
-    const witaDate = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Makassar" })
-    );
-    const date = witaDate.toISOString().split("T")[0];
-    const time = witaDate
-      .toLocaleTimeString("en-GB", { timeZone: "Asia/Makassar", hour12: false })
-      .slice(0, 8);
+    const makassarTime = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Makassar",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+
+    const getPart = (part) => makassarTime.find((p) => p.type === part)?.value;
+    const date = `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+    const time = `${getPart("hour")}:${getPart("minute")}:${getPart(
+      "second"
+    )}`.slice(0, 8);
 
     const lastLogoutTime = localStorage.getItem("lastLogoutTime");
     const initialTime = lastLogoutTime || time;
@@ -340,15 +349,19 @@ const App: React.FC = () => {
     // Fungsi untuk memperbarui waktu secara real-time
     const interval = setInterval(() => {
       const now = new Date();
-      const witaDate = new Date(
-        now.toLocaleString("en-US", { timeZone: "Asia/Makassar" })
-      );
-      const time = witaDate
-        .toLocaleTimeString("en-GB", {
-          timeZone: "Asia/Makassar",
-          hour12: false,
-        })
-        .slice(0, 8);
+      const makassarTime = new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Makassar",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(now);
+
+      const getPart = (part) =>
+        makassarTime.find((p) => p.type === part)?.value;
+      const time = `${getPart("hour")}:${getPart("minute")}:${getPart(
+        "second"
+      )}`.slice(0, 8);
       setForm((prev: FormState): FormState => ({ ...prev, time }));
       setTeacherForm(
         (prev: TeacherAttendanceFormState): TeacherAttendanceFormState => ({
@@ -1134,9 +1147,21 @@ const App: React.FC = () => {
     setIsPolling(false); // Tambahkan ini
 
     // Dapatkan tanggal dan jam saat ini
-    const now = new Date();
-    const currentDate = now.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-    const currentTime = now.toTimeString().slice(0, 5); // Format: HH:MM
+    const makassarTime = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Makassar",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(new Date());
+
+    const getPart = (part) => makassarTime.find((p) => p.type === part)?.value;
+    const currentDate = `${getPart("year")}-${getPart("month")}-${getPart(
+      "day"
+    )}`;
+    const currentTime = `${getPart("hour")}:${getPart("minute")}`.slice(0, 5);
 
     // Reset form dengan tanggal dan jam realtime
     setForm({
